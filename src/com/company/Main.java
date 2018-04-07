@@ -19,12 +19,14 @@ class ImageEdit{
     //pos
     int x,y,xf,yf;
     //
-    JColorChooser colorChooser;
+    private JColorChooser colorChooser;
+    private JColorChooser colorBackGroundChooser ;
     JFrame f;
-    JPanel jPanel;
+    private JPanel jPanel;
     boolean pressed=true;
-    Color currentColor ;
-    BufferedImage bufferedImage;
+    private Color currentColor;
+    private BufferedImage bufferedImage;
+    private Graphics g;
     public ImageEdit() {
         f = new JFrame("Graph Editor");
         f.setSize(500, 500);
@@ -63,12 +65,17 @@ class ImageEdit{
         ///Color panel
         JToolBar colorBar = new JToolBar("colorBar", JToolBar.HORIZONTAL);
         colorChooser = new JColorChooser(currentColor);
+        colorBackGroundChooser = new JColorChooser(jPanel.getBackground());
         JButton chooseColor = new JButton();
         chooseColor.addActionListener(actionEvent -> {
-            JDialog colorDialog = new JDialog(f);
+            JDialog colorDialog = new JDialog(f,"Choose color");
             colorDialog.add(colorChooser);
             colorDialog.setSize(200, 200);
             colorDialog.setVisible(true);
+        });
+        colorChooser.getSelectionModel().addChangeListener(changeEvent -> {
+            currentColor = colorChooser.getColor();
+            chooseColor.setBackground(currentColor);
         });
         colorBar.add(chooseColor);
         JButton blue = new JButton();
@@ -116,84 +123,54 @@ class ImageEdit{
         black.setBackground(Color.black);
         colorBar.add(black);
 
-        colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
-            @Override
-            public void stateChanged(ChangeEvent changeEvent) {
-                currentColor = colorChooser.getColor();
-                chooseColor.setBackground(currentColor);
-            }
-        });
         f.add(colorBar, BorderLayout.PAGE_START);
-
-        jPanel.addMouseMotionListener(new MouseMotionAdapter() {
+        JMenuBar options = new JMenuBar();
+        JMenu menu = new JMenu("Menu");
+        JMenuItem background = new JMenuItem("New");
+        menu.add(background);
+        options.add(menu);
+        background.addActionListener(actionEvent -> {
+            JDialog colorDialog = new JDialog(f,"Choose background");
+            colorDialog.add(colorBackGroundChooser);
+            colorDialog.setSize(200, 200);
+            colorDialog.setVisible(true);
+        });
+        colorBackGroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
+            jPanel.setBackground(colorBackGroundChooser.getColor());
+        });
+        f.setJMenuBar(options);
+        jPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
-            public void mouseDragged(MouseEvent e) {
-               // if (pressed) {
-                    Graphics g = bufferedImage.getGraphics();
-                    Graphics2D g2 = (Graphics2D) g;
-                    // установка цвета
-                    g2.setColor(currentColor);
-
-                    switch (mode) {
-                        case 0:
-                            g2.drawLine(100, 100, e.getX(), e.getY());
-                            break;
-                        case 1:
-                            g2.setStroke(new BasicStroke(3.0f));
-                            g2.drawLine(x, y, e.getX(), e.getY());
-                            break;
-                        // ластик
-                        case 2:
-                            g2.setStroke(new BasicStroke(3.0f));
-                            g2.setColor(Color.white);
-                            g2.drawLine(x, y, e.getX(), e.getY());
-                            break;
-                    }
-                //}
-
+            public void mouseMoved(MouseEvent e) {
                 x = e.getX();
                 y = e.getY();
-
-                pressed = true;
-                jPanel.repaint();
+                g = jPanel.getGraphics();
+                xf = x;
+                yf = y;
             }
+
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                // сохранить координаты
+                g = jPanel.getGraphics();
+                g.setColor(currentColor);
+                g.drawLine(x, y, e.getX(), e.getY());
+                x = e.getX();
+                y = e.getY();
+            }
+
         });
         jPanel.addMouseListener(new MouseAdapter() {
-            public void mouseCliced(MouseEvent e) {
-                Graphics g = bufferedImage.getGraphics();
-                Graphics2D g2 = (Graphics2D) g;
-                // установка цвета
-                g2.setColor(currentColor);
-                switch (mode) {
-                    // карандаш
-                    case 0:
-                        g2.drawLine(x, y, x + 1, y + 1);
-                        break;
-                    // кисть
-                    case 1:
-                        g2.setStroke(new BasicStroke(3.0f));
-                        g2.drawLine(x, y, x + 1, y + 1);
-                        break;
-                    // ластик
-                    case 2:
-                        g2.setStroke(new BasicStroke(3.0f));
-                        g2.setColor(Color.white);
-                        g2.drawLine(x, y, x + 1, y + 1);
-                        break;
-                }
-                x=e.getX();
-                y=e.getY();
-
-                pressed=true;
-                jPanel.repaint();
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                System.out.println("333");
             }
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                x = e.getX();
+                y = e.getY();
+                System.out.println("11");
 
-            public void mousePressed(MouseEvent e) {
-                x=e.getX();
-                y=e.getY();
-                xf=e.getX();
-                yf=e.getY();
-                pressed=true;
             }
         });
     }
