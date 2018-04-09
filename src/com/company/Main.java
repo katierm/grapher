@@ -27,10 +27,10 @@ class ImageEdit{
     private JColorChooser colorChooser;
     private JColorChooser colorBackGroundChooser ;
     JFrame f;
-    private MyPanel jPanel;
+    private MyPanel jPanel,jp;
     boolean pressed=true;
     private Color currentColor;
-    private BufferedImage bufferedImage;
+    private BufferedImage bufferedImage,bf2;
     private Graphics2D g,g2;
     int thickness;
     //private final BufferedImage ;
@@ -44,14 +44,17 @@ class ImageEdit{
         jPanel = new MyPanel();
         jPanel.setBackground(Color.white);
         jPanel.setSize(450, 450);
-        jPanel.setOpaque(true);
-        jPanel.setLayout(null);
         f.add(jPanel);
-
+        //f.add(jp);
         bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+        //bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
          g=(Graphics2D) bufferedImage.getGraphics();
         g.setColor(Color.white);
         g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
+
+        g2=(Graphics2D) bf2.getGraphics();
+        g2.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
         ///Tool panel;
         JToolBar jToolBar = new JToolBar("toolbar", JToolBar.VERTICAL);
 
@@ -182,8 +185,9 @@ class ImageEdit{
                     //g = bufferedImage.getGraphics();
                     xf = xPad;
                     yf = yPad;
-                    jPanel.setBufferedImage(bufferedImage);
-                    if(mode!=Brushes.OVAL||mode!=Brushes.RECTANGLE)jPanel.updateUI();
+                //jPanel.setBufferedImage(bufferedImage);
+                    //jPanel.setBufferedImage(bufferedImage);
+                    //jPanel.updateUI();
 
             }
 
@@ -200,17 +204,20 @@ class ImageEdit{
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         g.drawLine((int) (xp * bufferedImage.getWidth()), (int) (yp * bufferedImage.getHeight()),
                                 (int) (xp1 * bufferedImage.getWidth()), (int) (yp1 * bufferedImage.getHeight()));
+                        jPanel.setBufferedImage(bufferedImage);
                         break;
                     case BRUSH:
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         g.drawLine((int) (xp * bufferedImage.getWidth()), (int) (yp * bufferedImage.getHeight()),
                                 (int) (xp1 * bufferedImage.getWidth()), (int) (yp1 * bufferedImage.getHeight()));
+                        jPanel.setBufferedImage(bufferedImage);
                         break;
                     case ERASER:
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         g.setColor(Color.white);
                         g.drawLine((int) (xp * bufferedImage.getWidth()), (int) (yp * bufferedImage.getHeight()),
                                 (int) (xp1 * bufferedImage.getWidth()), (int) (yp1 * bufferedImage.getHeight()));
+                        jPanel.setBufferedImage(bufferedImage);
                         break;
                     case NET:
                         g.setStroke(new BasicStroke(1,BasicStroke.CAP_SQUARE,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
@@ -219,18 +226,28 @@ class ImageEdit{
                                 (int) (yp1 * bufferedImage.getHeight()+(thickness*thickness)));
                         break;
                     case OVAL:
+                        //bufferedImage.setAccelerationPriority((float)1);
                          xp1 = (xPad-xf);
                          yp1 = (yPad-yf);
                          int xt=(int)xf;
                          int yt=(int)yf;
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
-                        g2=(Graphics2D) jPanel.getGraphics();
+                        //bf2=bufferedImage;
+                        bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+                        g2=(Graphics2D) bf2.getGraphics();
+                        //g2.setColor(Color.white);
+                        g2.drawImage(bufferedImage, 0, 0, null);
+                        //g2=(Graphics2D) bf2.getGraphics();
+                        //g2.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
+                        //g2=(Graphics2D) bf2.getGraphics();
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         if (xp1<0)xt=xPad;
                         if (yp1<0)yt=yPad;
                         g2.drawOval(xt,yt,(int)abs(xp1),(int)abs(yp1));
-                        jPanel.updateUI();
+                        //bufferedImage=bf2;
+                        jPanel.setBufferedImage(bf2);
+                        //jPanel.updateUI();
                         break;
                     case RECTANGLE:
                         xp1 = (xPad-xf);
@@ -250,7 +267,7 @@ class ImageEdit{
 
                 xPad =e.getX();
                 yPad =e.getY();
-                jPanel.setBufferedImage(bufferedImage);
+                //jPanel.setBufferedImage(bufferedImage);
                 jPanel.updateUI();
             }
 
@@ -272,6 +289,7 @@ class ImageEdit{
                             (int) abs(xp1 * bufferedImage.getWidth()), (int) abs(yp1 * bufferedImage.getHeight()));
                     if(mode==Brushes.RECTANGLE)g.drawRect((int) (xp * bufferedImage.getWidth()), (int) abs(yp * bufferedImage.getHeight()),
                             (int) abs(xp1 * bufferedImage.getWidth()), (int) abs(yp1 * bufferedImage.getHeight()));
+                    jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
                 }
             }
