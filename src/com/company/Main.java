@@ -33,6 +33,7 @@ class ImageEdit{
     private BufferedImage bufferedImage,bf2;
     private Graphics2D g,g2;
     int thickness;
+    int textSize;
     //private final BufferedImage ;
 
     public ImageEdit() {
@@ -45,20 +46,15 @@ class ImageEdit{
         jPanel.setBackground(Color.white);
         jPanel.setSize(450, 450);
         f.add(jPanel);
-        //f.add(jp);
         bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
         bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
-        //bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
          g=(Graphics2D) bufferedImage.getGraphics();
         g.setColor(Color.white);
         g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
 
         g2=(Graphics2D) bf2.getGraphics();
-        g2.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
-        ///Tool panel;
         JToolBar jToolBar = new JToolBar("toolbar", JToolBar.VERTICAL);
 
-        //f.add(jToolBar);
 
         //brushes
         JButton pen = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/pen.jpeg").
@@ -91,13 +87,18 @@ class ImageEdit{
         rec.addActionListener(actionEvent -> mode = Brushes.RECTANGLE);
         jToolBar.add(rec);
 
+        JButton text = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/t.png").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        text.addActionListener(actionEvent -> mode = Brushes.TEXT);
+        jToolBar.add(text);
+        //jToolBar.add(text);
         f.add(jToolBar, BorderLayout.WEST);
         //
 
         ///Color panel
         JToolBar colorBar = new JToolBar("colorBar", JToolBar.HORIZONTAL);
         colorChooser = new JColorChooser(currentColor);
-        colorBackGroundChooser = new JColorChooser(Color.white);
+        colorBackGroundChooser = new JColorChooser();
         JButton chooseColor = new JButton();
         chooseColor.addActionListener(actionEvent -> {
             JDialog colorDialog = new JDialog(f,"Choose color");
@@ -174,6 +175,8 @@ class ImageEdit{
         colorBackGroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
             g.setColor(colorBackGroundChooser.getColor());
             g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
+            jPanel.setBufferedImage(bufferedImage);
+            //updateBackground(colorBackGroundChooser.getColor());
             jPanel.updateUI();
         });
         f.setJMenuBar(options);
@@ -182,12 +185,8 @@ class ImageEdit{
             public void mouseMoved(MouseEvent e) {
                     xPad = e.getX();
                     yPad = e.getY();
-                    //g = bufferedImage.getGraphics();
                     xf = xPad;
                     yf = yPad;
-                //jPanel.setBufferedImage(bufferedImage);
-                    //jPanel.setBufferedImage(bufferedImage);
-                    //jPanel.updateUI();
 
             }
 
@@ -224,30 +223,23 @@ class ImageEdit{
                         g.drawLine((int) (xp * bufferedImage.getWidth()), (int) (yp * bufferedImage.getHeight()),
                                 (int) (xp1 * bufferedImage.getWidth()+(thickness*thickness)),
                                 (int) (yp1 * bufferedImage.getHeight()+(thickness*thickness)));
+                        jPanel.setBufferedImage(bufferedImage);
                         break;
                     case OVAL:
-                        //bufferedImage.setAccelerationPriority((float)1);
                          xp1 = (xPad-xf);
                          yp1 = (yPad-yf);
                          int xt=(int)xf;
                          int yt=(int)yf;
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
-                        //bf2=bufferedImage;
                         bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
                         g2=(Graphics2D) bf2.getGraphics();
-                        //g2.setColor(Color.white);
                         g2.drawImage(bufferedImage, 0, 0, null);
-                        //g2=(Graphics2D) bf2.getGraphics();
-                        //g2.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
-                        //g2=(Graphics2D) bf2.getGraphics();
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         if (xp1<0)xt=xPad;
                         if (yp1<0)yt=yPad;
                         g2.drawOval(xt,yt,(int)abs(xp1),(int)abs(yp1));
-                        //bufferedImage=bf2;
                         jPanel.setBufferedImage(bf2);
-                        //jPanel.updateUI();
                         break;
                     case RECTANGLE:
                         xp1 = (xPad-xf);
@@ -255,19 +247,20 @@ class ImageEdit{
                          xt=(int)xf;
                          yt=(int)yf;
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
-                        g2=(Graphics2D) jPanel.getGraphics();
+                        bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+                        g2=(Graphics2D) bf2.getGraphics();
+                        g2.drawImage(bufferedImage, 0, 0, null);
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         if (xp1<0)xt=xPad;
                         if (yp1<0)yt=yPad;
                         g2.drawRect(xt,yt,(int)abs(xp1),(int)abs(yp1));
-                        jPanel.updateUI();
+                        jPanel.setBufferedImage(bf2);
                         break;
                 }
 
                 xPad =e.getX();
                 yPad =e.getY();
-                //jPanel.setBufferedImage(bufferedImage);
                 jPanel.updateUI();
             }
 
@@ -295,11 +288,27 @@ class ImageEdit{
             }
             @Override
             public void mousePressed(MouseEvent e) {
-                xf=e.getX();
-                yf=e.getY();
+                xPad=e.getX();
+                yPad=e.getY();
+                if(mode==Brushes.TEXT) {
+                    g=(Graphics2D) bufferedImage.getGraphics();
+                    String text = TextSelect.run(xPad,yPad,jPanel,g,bufferedImage);
+                    if(text==null)return;
+                    g.setColor(TextSelect.color);
+                    //g.setStroke(new BasicStroke(1000,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
+                    g.setFont(new Font("Arial",TextSelect.mode,TextSelect.size ));
+                    g.drawString(text,xPad,yPad);
+                    //System.out.println(text);
+                    jPanel.setBufferedImage(bufferedImage);
+                    jPanel.updateUI();
+                }
 
             }
         });
+
+    }
+    private void updateBackground(Color color) {
+        //сделать заливку
     }
 }
 
@@ -322,5 +331,6 @@ enum  Brushes {
     ERASER,
     NET,
     OVAL,
-    RECTANGLE
+    RECTANGLE,
+    TEXT
 }
