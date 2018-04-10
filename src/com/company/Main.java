@@ -5,6 +5,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.Stroke;
 import java.math.BigInteger;
@@ -295,10 +296,9 @@ class ImageEdit{
                     String text = TextSelect.run(xPad,yPad,jPanel,g,bufferedImage);
                     if(text==null)return;
                     g.setColor(TextSelect.color);
-                    //g.setStroke(new BasicStroke(1000,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                     g.setFont(new Font("Arial",TextSelect.mode,TextSelect.size ));
+                    g.rotate(Math.toRadians(TextSelect.angle));
                     g.drawString(text,xPad,yPad);
-                    //System.out.println(text);
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
                 }

@@ -16,13 +16,13 @@ public class TextSelect extends JDialog {
     private JSlider textSize;
     private JCheckBox b;
     private JCheckBox i;
-    boolean bChoosed=false;
-    boolean iChoosed=false;
+    private JSlider angleSlide;
     private JRadioButton p;
     String text=null;
     static int size=40;
     static int thickness;
     static int mode=Font.PLAIN;
+    static double angle;
     static Color color=Color.black;
     public TextSelect(int x,int y, MyPanel jPanel,Graphics2D g,BufferedImage bufferedImage) {
 
@@ -49,19 +49,39 @@ public class TextSelect extends JDialog {
         });
 
         i.addActionListener(actionEvent -> {
-            if(mode==Font.ITALIC){iChoosed=false; mode=Font.PLAIN;return;}
-            if(mode==Font.ITALIC+Font.BOLD){iChoosed=false; mode=Font.BOLD;return;}
-            iChoosed=true;
-            if (mode ==Font.BOLD) mode=Font.BOLD+Font.ITALIC;;
-            if(mode==Font.PLAIN)mode=Font.ITALIC;
+            if(mode==Font.ITALIC) mode = Font.PLAIN;
+                else if (mode == Font.ITALIC + Font.BOLD) mode = Font.BOLD;
+                else if (mode == Font.BOLD) mode = Font.BOLD + Font.ITALIC;
+                else if(mode == Font.PLAIN) mode = Font.ITALIC;
+
+            bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+            g2=(Graphics2D) bf2.getGraphics();
+            g2.drawImage(bufferedImage, 0, 0, null);
+            text= textField.getText();
+            if(text==null)return;
+            g2.setFont(new Font("Arial",mode,size ));
+            g2.setColor(color);
+            g2.drawString(text,x,y);;
+            jPanel.setBufferedImage(bf2);
+            jPanel.updateUI();
+
         });
 
         b.addActionListener(actionEvent -> {
-            if(mode==Font.BOLD){bChoosed=false; mode=Font.PLAIN;return;}
-            if(mode==Font.ITALIC+Font.BOLD){iChoosed=false; mode=Font.ITALIC;return;}
-            bChoosed=true;
-            if (mode ==Font.ITALIC) mode=Font.BOLD+Font.ITALIC;;
-            if(mode==Font.PLAIN)mode=Font.BOLD;
+            if(mode==Font.BOLD) mode=Font.PLAIN;
+            else if(mode==Font.ITALIC+Font.BOLD)mode=Font.ITALIC;
+            else if (mode ==Font.ITALIC) mode=Font.BOLD+Font.ITALIC;
+            else if(mode==Font.PLAIN)mode=Font.BOLD;
+            bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+            g2=(Graphics2D) bf2.getGraphics();
+            g2.drawImage(bufferedImage, 0, 0, null);
+            text= textField.getText();
+            if(text==null)return;
+            g2.setFont(new Font("Arial",mode,size ));
+            g2.setColor(color);
+            g2.drawString(text,x,y);
+            jPanel.setBufferedImage(bf2);
+            jPanel.updateUI();
         });
 
 
@@ -89,8 +109,6 @@ public class TextSelect extends JDialog {
                 g2=(Graphics2D) bf2.getGraphics();
                 g2.drawImage(bufferedImage, 0, 0, null);
                 text= textField.getText();
-                System.out.println(text);
-                //if(text==null)return;
                 g2.setFont(new Font("Arial",mode,size ));
                 g2.setColor(color);
                 g2.drawString(text,x,y);
@@ -126,7 +144,6 @@ public class TextSelect extends JDialog {
             }
         }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         textSize.setValue(40);
-        //thicknessSlider.setValue(1);
         textSize.addChangeListener(e -> {
             bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
             g2=(Graphics2D) bf2.getGraphics();
@@ -137,11 +154,26 @@ public class TextSelect extends JDialog {
             g2.setFont(new Font("Arial",mode,size ));
             g2.setColor(color);
             g2.drawString(text,x,y);
-            //System.out.println(text);
             jPanel.setBufferedImage(bf2);
             jPanel.updateUI();
 
         });
+
+        angleSlide.addChangeListener(e->{
+            bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+            g2=(Graphics2D) bf2.getGraphics();
+            g2.drawImage(bufferedImage, 0, 0, null);
+            angle= ((JSlider) e.getSource()).getValue() - 50;
+            text= textField.getText();
+            if(text==null)return;
+            g2.setFont(new Font("Arial",mode,size ));
+            g2.setColor(color);
+            g2.rotate(Math.toRadians(angle));
+            g2.drawString(text,x,y);
+            jPanel.setBufferedImage(bf2);
+            jPanel.updateUI();
+        });
+
     }
 
     private void onOK() {
