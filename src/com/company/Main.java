@@ -1,13 +1,17 @@
 package com.company;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.Stroke;
+import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 
 import static com.company.Brushes.PEN;
@@ -162,6 +166,7 @@ class ImageEdit{
         size.setValue(1);
         colorBar.add(size);
         f.add(colorBar, BorderLayout.PAGE_START);
+
         JMenuBar options = new JMenuBar();
         JMenu menu = new JMenu("Menu");
         JMenuItem background = new JMenuItem("New");
@@ -180,14 +185,48 @@ class ImageEdit{
             //updateBackground(colorBackGroundChooser.getColor());
             jPanel.updateUI();
         });
+
+        JMenuItem load = new JMenuItem("Load");
+        menu.add(load);
+        load.addActionListener(actionEvent -> {
+            JFileChooser loadChooser = new JFileChooser();
+            int res = loadChooser.showDialog(null,"Choose File");
+            if(res==JFileChooser.APPROVE_OPTION) {
+                String fileName = loadChooser.getSelectedFile().getAbsolutePath();
+                loadChooser.addChoosableFileFilter(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        if (file.isDirectory()) return true;
+                        return (file.getName().endsWith(".png")||file.getName().endsWith(".jpeg"));
+                    }
+
+                    @Override
+                    public String getDescription() {
+                        return null;
+                    }
+                });
+                try {
+                    bufferedImage = ImageIO.read(new File(fileName));
+                    g = (Graphics2D) bufferedImage.getGraphics();
+                    //g.drawImage(bufferedImage,0,0,bufferedImage.getWidth(), bufferedImage.getHeight(),null);
+                    jPanel.setBufferedImage(bufferedImage);
+                    jPanel.updateUI();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+
         f.setJMenuBar(options);
         jPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
                     xPad = e.getX();
                     yPad = e.getY();
-                    xf = xPad;
-                    yf = yPad;
+                    //xf = xPad;
+                    //yf = yPad;
 
             }
 
@@ -227,35 +266,37 @@ class ImageEdit{
                         jPanel.setBufferedImage(bufferedImage);
                         break;
                     case OVAL:
-                         xp1 = (xPad-xf);
-                         yp1 = (yPad-yf);
-                         int xt=(int)xf;
-                         int yt=(int)yf;
+                         xp1 = (double) (xPad-xf)/jPanel.getWidth();
+                         yp1 = (double) (yPad-yf)/jPanel.getHeight();
+                         double xt=(double) xf/jPanel.getWidth();
+                         double yt= (double) yf/jPanel.getHeight();
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
                         g2=(Graphics2D) bf2.getGraphics();
                         g2.drawImage(bufferedImage, 0, 0, null);
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
-                        if (xp1<0)xt=xPad;
-                        if (yp1<0)yt=yPad;
-                        g2.drawOval(xt,yt,(int)abs(xp1),(int)abs(yp1));
+                        if (xp1<0)xt= (double) xPad/jPanel.getWidth();
+                        if (yp1<0)yt= (double) yPad/jPanel.getHeight();
+                        g2.drawOval((int) (xt * bufferedImage.getWidth()), (int) abs(yt * bufferedImage.getHeight()),
+                                (int) abs(xp1 * bufferedImage.getWidth()), (int) abs(yp1 * bufferedImage.getHeight()));
                         jPanel.setBufferedImage(bf2);
                         break;
                     case RECTANGLE:
-                        xp1 = (xPad-xf);
-                        yp1 = (yPad-yf);
-                         xt=(int)xf;
-                         yt=(int)yf;
+                        xp1 = (double) (xPad-xf)/jPanel.getWidth();
+                        yp1 = (double) (yPad-yf)/jPanel.getHeight();
+                         xt=(double) xf/jPanel.getWidth();
+                         yt= (double) yf/jPanel.getHeight();
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
                         g2=(Graphics2D) bf2.getGraphics();
                         g2.drawImage(bufferedImage, 0, 0, null);
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
-                        if (xp1<0)xt=xPad;
-                        if (yp1<0)yt=yPad;
-                        g2.drawRect(xt,yt,(int)abs(xp1),(int)abs(yp1));
+                        if (xp1<0)xt= (double) xPad/jPanel.getWidth();
+                        if (yp1<0)yt= (double) yPad/jPanel.getHeight();
+                        g2.drawRect((int) (xt * bufferedImage.getWidth()), (int) abs(yt * bufferedImage.getHeight()),
+                                (int) abs(xp1 * bufferedImage.getWidth()), (int) abs(yp1 * bufferedImage.getHeight()));
                         jPanel.setBufferedImage(bf2);
                         break;
                 }
@@ -291,6 +332,8 @@ class ImageEdit{
             public void mousePressed(MouseEvent e) {
                 xPad=e.getX();
                 yPad=e.getY();
+                xf = xPad;
+                yf = yPad;
                 if(mode==Brushes.TEXT) {
                     g=(Graphics2D) bufferedImage.getGraphics();
                     String text = TextSelect.run(xPad,yPad,jPanel,g,bufferedImage);
