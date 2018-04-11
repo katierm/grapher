@@ -3,12 +3,13 @@ package com.company;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class TextSelect extends JDialog {
     Graphics2D g2;
     BufferedImage bf2;
-    JColorChooser colorChooser;
+    private JColorChooser colorChooser;
     private JPanel contentPane;
     private JButton buttonOK;
     private JButton buttonCancel;
@@ -26,6 +27,11 @@ public class TextSelect extends JDialog {
     static Color color=Color.black;
     public TextSelect(int x,int y, MyPanel jPanel,Graphics2D g,BufferedImage bufferedImage) {
 
+        angle=0;
+        mode=Font.PLAIN;
+        size=40;
+        color=Color.black;
+
         JMenuBar options = new JMenuBar();
         JMenuItem colorItem = new JMenuItem("Color");
         colorItem.setBackground(g.getColor());
@@ -40,6 +46,7 @@ public class TextSelect extends JDialog {
             colorDialog.setVisible(true);
         });
         colorChooser.getSelectionModel().addChangeListener(changeEvent -> {
+            if(text==null) return;
             color = colorChooser.getColor();
             colorItem.setBackground(color);
             g2.setColor(color);
@@ -61,6 +68,7 @@ public class TextSelect extends JDialog {
             if(text==null)return;
             g2.setFont(new Font("Arial",mode,size ));
             g2.setColor(color);
+            g2.rotate(Math.toRadians(angle));
             g2.drawString(text,x,y);;
             jPanel.setBufferedImage(bf2);
             jPanel.updateUI();
@@ -79,6 +87,7 @@ public class TextSelect extends JDialog {
             if(text==null)return;
             g2.setFont(new Font("Arial",mode,size ));
             g2.setColor(color);
+            g2.rotate(Math.toRadians(angle));
             g2.drawString(text,x,y);
             jPanel.setBufferedImage(bf2);
             jPanel.updateUI();
@@ -97,6 +106,7 @@ public class TextSelect extends JDialog {
 
         buttonCancel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+
                 onCancel();
             }
         });
@@ -111,6 +121,7 @@ public class TextSelect extends JDialog {
                 text= textField.getText();
                 g2.setFont(new Font("Arial",mode,size ));
                 g2.setColor(color);
+                g2.rotate(Math.toRadians(angle));
                 g2.drawString(text,x,y);
                 //System.out.println(text);
                 jPanel.setBufferedImage(bf2);
@@ -153,6 +164,7 @@ public class TextSelect extends JDialog {
             if(text==null)return;
             g2.setFont(new Font("Arial",mode,size ));
             g2.setColor(color);
+            g2.rotate(Math.toRadians(angle));
             g2.drawString(text,x,y);
             jPanel.setBufferedImage(bf2);
             jPanel.updateUI();
@@ -183,7 +195,14 @@ public class TextSelect extends JDialog {
 
     private void onCancel() {
         // add your code here if necessary
+        text=null;
         dispose();
+    }
+    public static  void flush(){
+        angle=0;
+
+        mode=Font.PLAIN;
+        size=40;
     }
 
     public static String run(int x, int y, MyPanel jPanel, Graphics2D g2, BufferedImage bufferedImage){

@@ -294,7 +294,11 @@ class ImageEdit{
                 if(mode==Brushes.TEXT) {
                     g=(Graphics2D) bufferedImage.getGraphics();
                     String text = TextSelect.run(xPad,yPad,jPanel,g,bufferedImage);
-                    if(text==null)return;
+                    if(text==null){
+                        jPanel.setBufferedImage(bufferedImage);
+                        jPanel.updateUI();
+                        return;
+                    }
                     g.setColor(TextSelect.color);
                     g.setFont(new Font("Arial",TextSelect.mode,TextSelect.size ));
                     g.rotate(Math.toRadians(TextSelect.angle));
