@@ -50,7 +50,10 @@ class ImageEdit{
         jPanel = new MyPanel();
         jPanel.setBackground(Color.white);
         jPanel.setSize(450, 450);
-        f.add(jPanel);
+        JScrollPane scrollPane=new JScrollPane(jPanel);
+        //scrollPane.setVisible(true);
+        f.add(scrollPane);
+
         bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
         bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
          g=(Graphics2D) bufferedImage.getGraphics();
@@ -107,9 +110,9 @@ class ImageEdit{
         JButton chooseColor = new JButton();
         chooseColor.addActionListener(actionEvent -> {
             JDialog colorDialog = new JDialog(f,"Choose color");
+            colorDialog.setVisible(true);
             colorDialog.add(colorChooser);
             colorDialog.setSize(200, 200);
-            colorDialog.setVisible(true);
         });
         colorChooser.getSelectionModel().addChangeListener(changeEvent -> {
             currentColor = colorChooser.getColor();
@@ -206,9 +209,15 @@ class ImageEdit{
                     }
                 });
                 try {
-                    bufferedImage = ImageIO.read(new File(fileName));
-                    g = (Graphics2D) bufferedImage.getGraphics();
-                    //g.drawImage(bufferedImage,0,0,bufferedImage.getWidth(), bufferedImage.getHeight(),null);
+                    BufferedImage tmp = ImageIO.read(new File(fileName));
+                    //bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    //g.drawImage(tmp,0,0,tmp.getWidth(), tmp.getHeight(),null);
+                    bufferedImage = new BufferedImage(tmp.getWidth(), tmp.getHeight(), BufferedImage.TYPE_INT_RGB);
+                    g=(Graphics2D) bufferedImage.getGraphics();
+                    jPanel.setPreferredSize(new Dimension(tmp.getWidth(),tmp.getHeight()));
+                    jPanel.updateUI();
+                    //jPanel.setSize(tmp.getWidth(),tmp.getHeight());
+                    g.drawImage(tmp,0,0,tmp.getWidth(),tmp.getHeight(),0,0,tmp.getWidth(),tmp.getHeight(),null);
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
 
@@ -218,6 +227,38 @@ class ImageEdit{
             }
         });
 
+        JMenuItem saveAs = new JMenuItem("Save as");
+        menu.add(saveAs);
+        saveAs.addActionListener(actionEvent -> {
+            JFileChooser saveChooser = new JFileChooser();
+            String fileName=null;
+            saveChooser.addChoosableFileFilter(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    if (file.isDirectory()) return true;
+                    return (file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"));
+                }
+
+                @Override
+                public String getDescription() {
+                    return null;
+                }
+            });
+            int res = saveChooser.showDialog(null,"Choose File");
+            if(res==JFileChooser.APPROVE_OPTION) {
+                 fileName = saveChooser.getSelectedFile().getAbsolutePath();
+            }
+            if(fileName==null)return;
+            try {
+                if (fileName.endsWith(".png")) ImageIO.write(bufferedImage, "png", new File(fileName));
+                if (fileName.endsWith(".jpeg")) ImageIO.write(bufferedImage, "jpeg", new File(fileName ));
+                if(!fileName.contains(".")) ImageIO.write(bufferedImage, "jpeg", new File(fileName +".jpeg"));
+
+            }catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+        });
 
         f.setJMenuBar(options);
         jPanel.addMouseMotionListener(new MouseAdapter() {
