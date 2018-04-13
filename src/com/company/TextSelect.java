@@ -60,19 +60,7 @@ public class TextSelect extends JDialog {
                 else if (mode == Font.ITALIC + Font.BOLD) mode = Font.BOLD;
                 else if (mode == Font.BOLD) mode = Font.BOLD + Font.ITALIC;
                 else if(mode == Font.PLAIN) mode = Font.ITALIC;
-
-            bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
-            g2=(Graphics2D) bf2.getGraphics();
-            g2.drawImage(bufferedImage, 0, 0, null);
-            text= textField.getText();
-            if(text==null)return;
-            g2.setFont(new Font("Arial",mode,size ));
-            g2.setColor(color);
-            g2.rotate(Math.toRadians(angle));
-            g2.drawString(text,x,y);;
-            jPanel.setBufferedImage(bf2);
-            jPanel.updateUI();
-
+                repaintForButton(jPanel,bufferedImage,x,y);
         });
 
         b.addActionListener(actionEvent -> {
@@ -80,17 +68,7 @@ public class TextSelect extends JDialog {
             else if(mode==Font.ITALIC+Font.BOLD)mode=Font.ITALIC;
             else if (mode ==Font.ITALIC) mode=Font.BOLD+Font.ITALIC;
             else if(mode==Font.PLAIN)mode=Font.BOLD;
-            bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
-            g2=(Graphics2D) bf2.getGraphics();
-            g2.drawImage(bufferedImage, 0, 0, null);
-            text= textField.getText();
-            if(text==null)return;
-            g2.setFont(new Font("Arial",mode,size ));
-            g2.setColor(color);
-            g2.rotate(Math.toRadians(angle));
-            g2.drawString(text,x,y);
-            jPanel.setBufferedImage(bf2);
-            jPanel.updateUI();
+            repaintForButton(jPanel,bufferedImage,x,y);
         });
 
 
@@ -123,7 +101,6 @@ public class TextSelect extends JDialog {
                 g2.setColor(color);
                 g2.rotate(Math.toRadians(angle));
                 g2.drawString(text,x,y);
-                //System.out.println(text);
                 jPanel.setBufferedImage(bf2);
                 jPanel.updateUI();
             }
@@ -204,7 +181,19 @@ public class TextSelect extends JDialog {
         mode=Font.PLAIN;
         size=40;
     }
-
+    void repaintForButton(MyPanel jPanel, BufferedImage bufferedImage,int x,int y){
+        bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+        g2=(Graphics2D) bf2.getGraphics();
+        g2.drawImage(bufferedImage, 0, 0, null);
+        text= textField.getText();
+        if(text==null)return;
+        g2.setFont(new Font("Arial",mode,size ));
+        g2.setColor(color);
+        g2.rotate(Math.toRadians(angle));
+        g2.drawString(text,x,y);
+        jPanel.setBufferedImage(bf2);
+        jPanel.updateUI();
+    }
     public static String run(int x, int y, MyPanel jPanel, Graphics2D g2, BufferedImage bufferedImage){
         TextSelect dialog = new TextSelect(x,y,jPanel,g2,bufferedImage);
         dialog.setBounds(x,y,0,0);

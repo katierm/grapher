@@ -27,19 +27,21 @@ public class Main {
 class ImageEdit{
     private Brushes mode= PEN;
     //pos
-    int xPad, yPad,xf,yf;
+    int xPad, yPad;
+
+    //for oval and rec
+    int xf,yf;
     //
+    JFrame f;
     private JColorChooser colorChooser;
     private JColorChooser colorBackGroundChooser ;
-    JFrame f;
-    private MyPanel jPanel,jp;
+    private MyPanel jPanel;
     boolean pressed=true;
     private Color currentColor;
     private BufferedImage bufferedImage,bf2;
     private Graphics2D g,g2;
-    int thickness;
+    private int thickness;
     int textSize;
-    //private final BufferedImage ;
 
     public ImageEdit() {
         f = new JFrame("Graph Editor");
@@ -50,63 +52,25 @@ class ImageEdit{
         jPanel = new MyPanel();
         jPanel.setBackground(Color.white);
         jPanel.setSize(450, 450);
-        JScrollPane scrollPane=new JScrollPane(jPanel);
-        //scrollPane.setVisible(true);
+        JScrollPane scrollPane = new JScrollPane(jPanel);
         f.add(scrollPane);
 
         bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
-        bf2 = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
-         g=(Graphics2D) bufferedImage.getGraphics();
+        g = (Graphics2D) bufferedImage.getGraphics();
         g.setColor(Color.white);
-        g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
+        g.fillRect(0, 0, jPanel.getWidth(), jPanel.getHeight());
 
-        g2=(Graphics2D) bf2.getGraphics();
-        JToolBar jToolBar = new JToolBar("toolbar", JToolBar.VERTICAL);
+        setColorButtons();
+        setToolButons();
+        setListeners();
+        setMenu();
+    }
 
-
-        //brushes
-        JButton pen = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/pen.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        pen.addActionListener(actionEvent -> {mode = PEN;});
-        jToolBar.add(pen);
-
-        JButton brush = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/brush.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        brush.addActionListener(actionEvent -> {mode = Brushes.BRUSH;});
-        jToolBar.add(brush);
-
-        JButton eraser = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/eraser.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        eraser.addActionListener(actionEvent -> mode = Brushes.ERASER);
-        jToolBar.add(eraser);
-
-        JButton net = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/net.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        net.addActionListener(actionEvent -> mode = Brushes.NET);
-        jToolBar.add(net);
-
-        JButton oval = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/oval.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        oval.addActionListener(actionEvent -> mode = Brushes.OVAL);
-        jToolBar.add(oval);
-
-        JButton rec = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/rec.jpeg").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        rec.addActionListener(actionEvent -> mode = Brushes.RECTANGLE);
-        jToolBar.add(rec);
-
-        JButton text = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/t.png").
-                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
-        text.addActionListener(actionEvent -> mode = Brushes.TEXT);
-        jToolBar.add(text);
-        //jToolBar.add(text);
-        f.add(jToolBar, BorderLayout.WEST);
-        //
-
-        ///Color panel
+    private void setColorButtons(){
         JToolBar colorBar = new JToolBar("colorBar", JToolBar.HORIZONTAL);
         colorChooser = new JColorChooser(currentColor);
         colorBackGroundChooser = new JColorChooser();
+
         JButton chooseColor = new JButton();
         chooseColor.addActionListener(actionEvent -> {
             JDialog colorDialog = new JDialog(f,"Choose color");
@@ -119,6 +83,7 @@ class ImageEdit{
             chooseColor.setBackground(currentColor);
         });
         colorBar.add(chooseColor);
+
         JButton blue = new JButton();
         blue.addActionListener(actionEvent -> currentColor = Color.blue);
         blue.setBackground(Color.blue);
@@ -169,106 +134,54 @@ class ImageEdit{
         size.setValue(1);
         colorBar.add(size);
         f.add(colorBar, BorderLayout.PAGE_START);
+    }
+    private void setToolButons(){
+        JToolBar jToolBar = new JToolBar("toolbar", JToolBar.VERTICAL);
+        JButton pen = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/pen.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        pen.addActionListener(actionEvent -> {mode = PEN;});
+        jToolBar.add(pen);
 
-        JMenuBar options = new JMenuBar();
-        JMenu menu = new JMenu("Menu");
-        JMenuItem background = new JMenuItem("New");
-        menu.add(background);
-        options.add(menu);
-        background.addActionListener(actionEvent -> {
-            JDialog colorDialog = new JDialog(f,"Choose background");
-            colorDialog.add(colorBackGroundChooser);
-            colorDialog.setSize(200, 200);
-            colorDialog.setVisible(true);
-        });
-        colorBackGroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
-            g.setColor(colorBackGroundChooser.getColor());
-            g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
-            jPanel.setBufferedImage(bufferedImage);
-            //updateBackground(colorBackGroundChooser.getColor());
-            jPanel.updateUI();
-        });
+        JButton brush = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/brush.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        brush.addActionListener(actionEvent -> {mode = Brushes.BRUSH;});
+        jToolBar.add(brush);
 
-        JMenuItem load = new JMenuItem("Load");
-        menu.add(load);
-        load.addActionListener(actionEvent -> {
-            JFileChooser loadChooser = new JFileChooser();
-            int res = loadChooser.showDialog(null,"Choose File");
-            if(res==JFileChooser.APPROVE_OPTION) {
-                String fileName = loadChooser.getSelectedFile().getAbsolutePath();
-                loadChooser.addChoosableFileFilter(new FileFilter() {
-                    @Override
-                    public boolean accept(File file) {
-                        if (file.isDirectory()) return true;
-                        return (file.getName().endsWith(".png")||file.getName().endsWith(".jpeg"));
-                    }
+        JButton eraser = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/eraser.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        eraser.addActionListener(actionEvent -> mode = Brushes.ERASER);
+        jToolBar.add(eraser);
 
-                    @Override
-                    public String getDescription() {
-                        return null;
-                    }
-                });
-                try {
-                    BufferedImage tmp = ImageIO.read(new File(fileName));
-                    //bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    //g.drawImage(tmp,0,0,tmp.getWidth(), tmp.getHeight(),null);
-                    bufferedImage = new BufferedImage(tmp.getWidth(), tmp.getHeight(), BufferedImage.TYPE_INT_RGB);
-                    g=(Graphics2D) bufferedImage.getGraphics();
-                    jPanel.setPreferredSize(new Dimension(tmp.getWidth(),tmp.getHeight()));
-                    jPanel.updateUI();
-                    //jPanel.setSize(tmp.getWidth(),tmp.getHeight());
-                    g.drawImage(tmp,0,0,tmp.getWidth(),tmp.getHeight(),0,0,tmp.getWidth(),tmp.getHeight(),null);
-                    jPanel.setBufferedImage(bufferedImage);
-                    jPanel.updateUI();
+        JButton net = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/net.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        net.addActionListener(actionEvent -> mode = Brushes.NET);
+        jToolBar.add(net);
 
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        JButton oval = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/oval.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        oval.addActionListener(actionEvent -> mode = Brushes.OVAL);
+        jToolBar.add(oval);
 
-        JMenuItem saveAs = new JMenuItem("Save as");
-        menu.add(saveAs);
-        saveAs.addActionListener(actionEvent -> {
-            JFileChooser saveChooser = new JFileChooser();
-            String fileName=null;
-            saveChooser.addChoosableFileFilter(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    if (file.isDirectory()) return true;
-                    return (file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"));
-                }
+        JButton rec = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/rec.jpeg").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        rec.addActionListener(actionEvent -> mode = Brushes.RECTANGLE);
+        jToolBar.add(rec);
 
-                @Override
-                public String getDescription() {
-                    return null;
-                }
-            });
-            int res = saveChooser.showDialog(null,"Choose File");
-            if(res==JFileChooser.APPROVE_OPTION) {
-                 fileName = saveChooser.getSelectedFile().getAbsolutePath();
-            }
-            if(fileName==null)return;
-            try {
-                if (fileName.endsWith(".png")) ImageIO.write(bufferedImage, "png", new File(fileName));
-                if (fileName.endsWith(".jpeg")) ImageIO.write(bufferedImage, "jpeg", new File(fileName ));
-                if(!fileName.contains(".")) ImageIO.write(bufferedImage, "jpeg", new File(fileName +".jpeg"));
-
-            }catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-        });
-
-        f.setJMenuBar(options);
+        JButton text = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/t.png").
+                getImage().getScaledInstance(20,20,Image.SCALE_DEFAULT)));
+        text.addActionListener(actionEvent -> mode = Brushes.TEXT);
+        jToolBar.add(text);
+        //jToolBar.add(text);
+        f.add(jToolBar, BorderLayout.WEST);
+    }
+    private  void setListeners(){
         jPanel.addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseMoved(MouseEvent e) {
-                    xPad = e.getX();
-                    yPad = e.getY();
-                    //xf = xPad;
-                    //yf = yPad;
-
+                xPad = e.getX();
+                yPad = e.getY();
+                //xf = xPad;
+                //yf = yPad;
             }
 
             @Override
@@ -307,10 +220,10 @@ class ImageEdit{
                         jPanel.setBufferedImage(bufferedImage);
                         break;
                     case OVAL:
-                         xp1 = (double) (xPad-xf)/jPanel.getWidth();
-                         yp1 = (double) (yPad-yf)/jPanel.getHeight();
-                         double xt=(double) xf/jPanel.getWidth();
-                         double yt= (double) yf/jPanel.getHeight();
+                        xp1 = (double) (xPad-xf)/jPanel.getWidth();
+                        yp1 = (double) (yPad-yf)/jPanel.getHeight();
+                        double xt=(double) xf/jPanel.getWidth();
+                        double yt= (double) yf/jPanel.getHeight();
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
                         g2=(Graphics2D) bf2.getGraphics();
@@ -326,8 +239,8 @@ class ImageEdit{
                     case RECTANGLE:
                         xp1 = (double) (xPad-xf)/jPanel.getWidth();
                         yp1 = (double) (yPad-yf)/jPanel.getHeight();
-                         xt=(double) xf/jPanel.getWidth();
-                         yt= (double) yf/jPanel.getHeight();
+                        xt=(double) xf/jPanel.getWidth();
+                        yt= (double) yf/jPanel.getHeight();
                         g.setStroke(new BasicStroke(thickness,BasicStroke.CAP_ROUND,BasicStroke.JOIN_BEVEL,0,new float[]{3,1},0));
                         bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
                         g2=(Graphics2D) bf2.getGraphics();
@@ -393,8 +306,102 @@ class ImageEdit{
 
             }
         });
-
     }
+
+     private void setMenu() {
+         JMenuBar options = new JMenuBar();
+         JMenu menu = new JMenu("Menu");
+         JMenuItem background = new JMenuItem("New");
+         menu.add(background);
+         options.add(menu);
+         background.addActionListener(actionEvent -> {
+             JDialog colorDialog = new JDialog(f,"Choose background");
+             colorDialog.add(colorBackGroundChooser);
+             colorDialog.setSize(200, 200);
+             colorDialog.setVisible(true);
+         });
+         colorBackGroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
+             g.setColor(colorBackGroundChooser.getColor());
+             g.fillRect(0,0,jPanel.getWidth(),jPanel.getHeight());
+             jPanel.setBufferedImage(bufferedImage);
+             //updateBackground(colorBackGroundChooser.getColor());
+             jPanel.updateUI();
+         });
+
+         JMenuItem load = new JMenuItem("Load");
+         menu.add(load);
+         load.addActionListener(actionEvent -> {
+             JFileChooser loadChooser = new JFileChooser();
+             int res = loadChooser.showDialog(null,"Choose File");
+             if(res==JFileChooser.APPROVE_OPTION) {
+                 String fileName = loadChooser.getSelectedFile().getAbsolutePath();
+                 loadChooser.addChoosableFileFilter(new FileFilter() {
+                     @Override
+                     public boolean accept(File file) {
+                         if (file.isDirectory()) return true;
+                         return (file.getName().endsWith(".png")||file.getName().endsWith(".jpeg"));
+                     }
+
+                     @Override
+                     public String getDescription() {
+                         return null;
+                     }
+                 });
+                 try {
+                     BufferedImage tmp = ImageIO.read(new File(fileName));
+                     //bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
+                     //g.drawImage(tmp,0,0,tmp.getWidth(), tmp.getHeight(),null);
+                     bufferedImage = new BufferedImage(tmp.getWidth(), tmp.getHeight(), BufferedImage.TYPE_INT_RGB);
+                     g=(Graphics2D) bufferedImage.getGraphics();
+                     jPanel.setPreferredSize(new Dimension(tmp.getWidth(),tmp.getHeight()));
+                     jPanel.updateUI();
+                     //jPanel.setSize(tmp.getWidth(),tmp.getHeight());
+                     g.drawImage(tmp,0,0,tmp.getWidth(),tmp.getHeight(),0,0,tmp.getWidth(),tmp.getHeight(),null);
+                     jPanel.setBufferedImage(bufferedImage);
+                     jPanel.updateUI();
+
+                 } catch (IOException e) {
+                     e.printStackTrace();
+                 }
+             }
+         });
+
+         JMenuItem saveAs = new JMenuItem("Save as");
+         menu.add(saveAs);
+         saveAs.addActionListener(actionEvent -> {
+             JFileChooser saveChooser = new JFileChooser();
+             String fileName=null;
+             saveChooser.addChoosableFileFilter(new FileFilter() {
+                 @Override
+                 public boolean accept(File file) {
+                     if (file.isDirectory()) return true;
+                     return (file.getName().endsWith(".png") || file.getName().endsWith(".jpeg"));
+                 }
+
+                 @Override
+                 public String getDescription() {
+                     return null;
+                 }
+             });
+             int res = saveChooser.showDialog(null,"Choose File");
+             if(res==JFileChooser.APPROVE_OPTION) {
+                 fileName = saveChooser.getSelectedFile().getAbsolutePath();
+             }
+             if(fileName==null)return;
+             try {
+                 if (fileName.endsWith(".png")) ImageIO.write(bufferedImage, "png", new File(fileName));
+                 if (fileName.endsWith(".jpeg")) ImageIO.write(bufferedImage, "jpeg", new File(fileName ));
+                 if(!fileName.contains(".")) ImageIO.write(bufferedImage, "jpeg", new File(fileName +".jpeg"));
+
+             }catch (IOException e) {
+                 e.printStackTrace();
+             }
+
+         });
+
+         f.setJMenuBar(options);
+     }
+
     private void updateBackground(Color color) {
         //сделать заливку
     }
