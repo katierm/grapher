@@ -13,6 +13,7 @@ import java.awt.Stroke;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Stack;
 
 import static com.company.Brushes.PEN;
 import static java.lang.Math.abs;
@@ -41,6 +42,9 @@ class ImageEdit{
     private BufferedImage bufferedImage,bf2;
     private Graphics2D g,g2;
     private int thickness;
+    public Stack<BufferedImage> redoStack = new Stack<>();
+    public Stack<BufferedImage> undoStack = new Stack<>();
+    boolean wasRedo=false;
     int textSize;
 
     public ImageEdit() {
@@ -59,6 +63,7 @@ class ImageEdit{
         g = (Graphics2D) bufferedImage.getGraphics();
         g.setColor(Color.white);
         g.fillRect(0, 0, jPanel.getWidth(), jPanel.getHeight());
+        redoStack.push(clone(bufferedImage));
 
         setColorButtons();
         setToolButons();
@@ -281,9 +286,25 @@ class ImageEdit{
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
                 }
+                redoStack.push(clone(bufferedImage));
+                /*g=redoStack.pop();
+                //g=(Graphics2D) bufferedImage.getGraphics();
+                g.drawImage(bufferedImage, 0, 0, jPanel.getWidth(),jPanel.getHeight(),null);
+                jPanel.setBufferedImage(bufferedImage);
+                System.out.println(bufferedImage);*/
+
+            }
+            final BufferedImage clone(BufferedImage image) {
+                BufferedImage clone = new BufferedImage(image.getWidth(),
+                        image.getHeight(), image.getType());
+                Graphics2D g2d = clone.createGraphics();
+                g2d.drawImage(image, 0, 0, null);
+                g2d.dispose();
+                return clone;
             }
             @Override
             public void mousePressed(MouseEvent e) {
+                wasRedo=false;
                 xPad=e.getX();
                 yPad=e.getY();
                 xf = xPad;
@@ -306,6 +327,19 @@ class ImageEdit{
 
             }
         });
+    }
+
+   // public  BufferedImage clone() {
+   //     return clone();
+   // }
+
+    private BufferedImage clone(BufferedImage image) {
+        BufferedImage clone = new BufferedImage(image.getWidth(),
+                image.getHeight(), image.getType());
+        Graphics2D g2d = clone.createGraphics();
+        g2d.drawImage(image, 0, 0, null);
+        g2d.dispose();
+        return clone;
     }
 
      private void setMenu() {
@@ -398,8 +432,34 @@ class ImageEdit{
              }
 
          });
+         ////redo/undo
+         JToolBar redo_undo = new JToolBar("toolbar", JToolBar.HORIZONTAL);
+
+         JButton redo = new JButton("redo");
+         redo.addActionListener(actionEvent -> {
+             if(!redoStack.empty()) {
+                 //jPanel.setBufferedImage(redoStack.pop());
+                 BufferedImage b=redoStack.pop();
+                 undoStack.push(clone(b));
+                 if(wasRedo==false)bufferedImage=redoStack.pop();
+                    else bufferedImage=clone(b);
+                 g.drawImage(bufferedImage, 0, 0, null);
+                 wasRedo=true;
+                 //g.drawImage(bufferedImage,0,0,jPanel.getWidth(),jPanel.getHeight(),null);
+                 jPanel.setBufferedImage(bufferedImage);
+                 //System.out.println(redoStack.pop()==bufferedImage);
+                 jPanel.updateUI();
+             }
+         });
+         redo_undo.add(redo);
+
+         JButton undo = new JButton("undo");
+         redo_undo.add(undo);
+         options.add(redo_undo,BorderLayout.BEFORE_FIRST_LINE);
 
          f.setJMenuBar(options);
+
+
      }
 
     private void updateBackground(Color color) {

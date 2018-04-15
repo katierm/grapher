@@ -19,7 +19,7 @@ public class TextSelect extends JDialog {
     private JCheckBox i;
     private JSlider angleSlide;
     private JRadioButton p;
-    String text=null;
+    private String text=null;
     static int size=40;
     static int thickness;
     static int mode=Font.PLAIN;
