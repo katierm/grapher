@@ -2,6 +2,8 @@ package com.company;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -36,17 +38,16 @@ class ImageEdit {
     //
     JFrame f;
     private JColorChooser colorChooser;
-    private JColorChooser colorBackGroundChooser;
+    private JColorChooser newPicture;
     private MyPanel jPanel;
     boolean pressed = true;
     private Color currentColor;
     private BufferedImage bufferedImage, bf2;
     private Graphics2D g, g2;
     private int thickness;
+    private  int backgroundColor = -1;
     public Stack<BufferedImage> redoStack = new Stack<>();
     public Stack<BufferedImage> undoStack = new Stack<>();
-    boolean wasRedo = false;
-    boolean wasUndo = false;
     int textSize;
 
     public ImageEdit() {
@@ -363,18 +364,19 @@ class ImageEdit {
         JMenuItem background = new JMenuItem("New");
         menu.add(background);
         options.add(menu);
-        colorBackGroundChooser = new JColorChooser();
+        newPicture = new JColorChooser();
         background.addActionListener(actionEvent -> {
             JDialog colorDialog = new JDialog(f, "Choose background");
-            colorDialog.add(colorBackGroundChooser);
+            colorDialog.add(newPicture);
             colorDialog.setSize(200, 200);
             colorDialog.setVisible(true);
         });
 
-        colorBackGroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
+        newPicture.getSelectionModel().addChangeListener(changeEvent -> {
             redoStack.push(clone(bufferedImage));
-            g.setColor(colorBackGroundChooser.getColor());
+            g.setColor(newPicture.getColor());
             g.fillRect(0, 0, jPanel.getWidth(), jPanel.getHeight());
+            currentColor=newPicture.getColor();
             jPanel.setBufferedImage(bufferedImage);
             jPanel.updateUI();
         });
@@ -447,18 +449,25 @@ class ImageEdit {
             }
 
         });
+        JColorChooser newBackgroundChooser = new JColorChooser();
         JMenuItem newBackground = new JMenuItem("new background");
         menu.add(newBackground);
         newBackground.addActionListener(actionEvent -> {
-            updateBackground(bufferedImage);
+            JDialog colorDialog = new JDialog(f, "Choose background");
+            colorDialog.add(newBackgroundChooser);
+            colorDialog.setSize(200, 200);
+            colorDialog.setVisible(true);
+        });
+        newBackgroundChooser.getSelectionModel().addChangeListener(changeEvent -> {
+            updateBackground(bufferedImage,newBackgroundChooser.getColor());
             jPanel.setBufferedImage(bufferedImage);
             jPanel.updateUI();
-
         });
         ////redo/undo
         JToolBar redo_undo = new JToolBar("toolbar", JToolBar.HORIZONTAL);
 
-        JButton redo = new JButton("redo");
+        JButton redo = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/redo.jpeg").
+                getImage().getScaledInstance(20, 20, Image.SCALE_DEFAULT)));
 
         redo.addActionListener((ActionEvent actionEvent) -> {
 
@@ -479,9 +488,8 @@ class ImageEdit {
         });
 
 
-        redo_undo.add(redo);
-
-        JButton undo = new JButton("undo");
+        JButton undo = new JButton(new ImageIcon(new ImageIcon("/home/katier/Рабочий стол/12/Grapher/src/com/company/undo.jpg").
+                getImage().getScaledInstance(20, 20, Image.SCALE_DEFAULT)));
         undo.addActionListener(actionEvent -> {
             if (undoStack.empty()) return;
             BufferedImage b = undoStack.pop();
@@ -494,10 +502,10 @@ class ImageEdit {
         });
 
         redo_undo.add(undo);
+        redo_undo.add(redo);
         options.add(redo_undo, BorderLayout.BEFORE_FIRST_LINE);
 
         f.setJMenuBar(options);
-
 
     }
 
@@ -563,7 +571,7 @@ class ImageEdit {
         }
     }
 
-    private void updateBackground(BufferedImage image) {
+    private void updateBackground(BufferedImage image,Color color) {
         int width = image.getWidth();
         int height = image.getHeight();
 
@@ -582,9 +590,9 @@ class ImageEdit {
         }
         //System.out.println(Arrays.deepToString(pixels2D));
         int curColor = image.getRGB(xPad, yPad);
-        int colorToFill = currentColor.getRGB();
-        updateBackground(pixels2D, curColor, colorToFill);
-
+        int colorToFill = color.getRGB();
+        updateBackground(pixels2D, colorToFill);
+         backgroundColor=colorToFill;
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 pixels[y * width + x] = pixels2D[x][y];
@@ -593,12 +601,12 @@ class ImageEdit {
         }
     }
 
-    private void updateBackground(int[][] arr, int initialColor, int colorToFill) {
+    private void updateBackground(int[][] arr, int colorToFill) {
         int width = bufferedImage.getWidth();
         int height = bufferedImage.getHeight();
         for (int i = 0; i < width; i++)
             for (int j = 0; j < height; j++)
-                if (arr[i][j] == initialColor) arr[i][j] = colorToFill;
+                if (arr[i][j] == backgroundColor) arr[i][j] = colorToFill;
     }
 }
 
