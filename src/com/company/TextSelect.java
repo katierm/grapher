@@ -112,7 +112,16 @@ public class TextSelect extends JDialog {
 
             @Override
             public void keyReleased(KeyEvent keyEvent) {
-
+                bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+                g2=(Graphics2D) bf2.getGraphics();
+                g2.drawImage(bufferedImage, 0, 0, null);
+                text= textField.getText();
+                g2.setFont(new Font("Arial",mode,size ));
+                g2.setColor(color);
+                g2.rotate(Math.toRadians(angle));
+                g2.drawString(text,x,y);
+                jPanel.setBufferedImage(bf2);
+                jPanel.updateUI();
             }
         });
 
@@ -126,11 +135,7 @@ public class TextSelect extends JDialog {
         });
 
         // call onCancel() on ESCAPE
-        contentPane.registerKeyboardAction(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                onCancel();
-            }
-        }, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        contentPane.registerKeyboardAction(e -> onCancel(), KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         textSize.setValue(40);
         textSize.addChangeListener(e -> {
             bf2=new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
