@@ -39,7 +39,6 @@ class ImageEdit {
     private JColorChooser colorChooser;
     private JColorChooser newPicture;
     private MyPanel jPanel;
-    boolean pressed = true;
     private Color currentColor;
     public BufferedImage bufferedImage, bf2;
     private Graphics2D g, g2;
@@ -57,14 +56,13 @@ class ImageEdit {
 
         jPanel = new MyPanel();
         jPanel.setBackground(Color.white);
-        //jPanel.setSize();
-        jPanel.setSize(450,450);
-        //jPanel.setBounds(60,60,100,100);
-        JScrollPane scrollPane = new JScrollPane(jPanel);
-        //scrollPane.setSize(450,450);
+
+        jPanel.setSize(f.getWidth()-36,f.getHeight()-58);
+        JPanel hp=new JPanel();
+        jPanel.setLayout(new BorderLayout());
+        hp.add(jPanel);
+        JScrollPane scrollPane = new JScrollPane(hp);
         scrollPane.setFocusable(false);
-        jPanel.setLayout(null);
-        //scrollPane.setLayout(null);
         f.add(scrollPane);
         bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
         g = (Graphics2D) bufferedImage.getGraphics();
@@ -76,6 +74,9 @@ class ImageEdit {
         setToolButons();
         setListeners();
         setMenu();
+        System.out.println(bufferedImage.getWidth()+" "+bufferedImage.getHeight());
+        System.out.println(jPanel.getWidth()+" "+jPanel.getHeight());
+
         InputMap imap = jPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         imap.put(KeyStroke.getKeyStroke("ctrl S"), "test");
 
@@ -87,11 +88,6 @@ class ImageEdit {
             }
         });
         jPanel.requestFocus();
-        //jPanel.setSize(new Dimension((int)(bufferedImage.getWidth()),
-        //        (int)(bufferedImage.getHeight())));
-        System.out.println(jPanel.getWidth()+" "+jPanel.getHeight());
-        //jPanel.setPreferredSize(new Dimension((int)(bufferedImage.getWidth()),
-        //        (int)(bufferedImage.getHeight())));-
     }
 
     private void setColorButtons() {
@@ -181,13 +177,6 @@ class ImageEdit {
         size.setValue(1);
         colorBar.add(size);
 
-        for (int i = 0; i < colorBar.getComponentCount(); i++) {
-            Component comp = colorBar.getComponent(i);
-            if (comp instanceof JButton || comp instanceof JSlider) {
-                (comp).setFocusable(false);
-            }
-
-        }
         colorBar.setFloatable(false);
         f.add(colorBar, BorderLayout.PAGE_START);
         colorBar.setFloatable(false);
@@ -445,42 +434,21 @@ class ImageEdit {
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
                     //System.out.println(bufferedImage.getWidth());*/
-                    System.out.println(jPanel.getWidth()+" "+bufferedImage.getWidth()+
-                            " "+jPanel.getHeight()+" "+ bufferedImage.getHeight());
-                    jPanel.setPreferredSize(new Dimension((int)(bufferedImage.getWidth()*2),
-                            (int)(bufferedImage.getHeight()*2)));
-                    g = (Graphics2D) bufferedImage.getGraphics();
-                    g.drawImage(bufferedImage, 0, 0, (int)(bufferedImage.getWidth()),
-                            (int)(bufferedImage.getHeight()), null);
+                    jPanel.setPreferredSize(new Dimension((int)(jPanel.getWidth()*2),
+                            (int)(jPanel.getHeight()*2)));
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
 
-                    System.out.println(jPanel.getWidth()+" "+bufferedImage.getWidth()+
-                            " "+jPanel.getHeight()+" "+ bufferedImage.getHeight());
                 }
                 if (mode == Brushes.COLOR) {
                     int[] pixels = ((DataBufferInt) bufferedImage.getRaster().getDataBuffer()).getData();
-                    System.out.println(pixels.length+" "+(e.getY() * jPanel.getWidth() + e.getX()));
                     currentColor = new Color(pixels[e.getY() * jPanel.getWidth() + e.getX()]);
                 }
                 if(mode==Brushes.MINUS){
-                    //g = (Graphics2D) bufferedImage.getGraphics();
-                    /*jPanel.setPreferredSize(new Dimension((int)(jPanel.getWidth()),
-                            (int)(jPanel.getHeight())));
-                    bf2=clone(bufferedImage);
-                    g=(Graphics2D) bufferedImage.getGraphics();
-                    g.setColor(Color.white);
-                    g.fillRect(0,0,
-                            bufferedImage.getWidth(),bufferedImage.getHeight());
-                    g.drawImage(bf2, 0, 0, (int)(bufferedImage.getWidth()*0.5),
-                            (int)(bufferedImage.getHeight()*0.5), null);
+                    jPanel.setPreferredSize(new Dimension((int)(jPanel.getWidth()*0.5),
+                            (int)(jPanel.getHeight()*0.5)));
                     jPanel.setBufferedImage(bufferedImage);
                     jPanel.updateUI();
-                    System.out.println(jPanel.getWidth()+" "+bufferedImage.getWidth()+
-                            " "+jPanel.getHeight()+" "+ bufferedImage.getHeight());*/
-                    jPanel.setPreferredSize(new Dimension((int)(bufferedImage.getWidth()),
-                            (int)(bufferedImage.getHeight())));
-                    f.setSize((int)(jPanel.getWidth()*0.5),(int)(jPanel.getHeight()*0.5));
                 }
             }
         });
@@ -531,11 +499,14 @@ class ImageEdit {
 
         newPicture.getSelectionModel().addChangeListener(changeEvent -> {
             redoStack.push(clone(bufferedImage));
+            jPanel.setSize(new Dimension(f.getWidth()-36,f.getHeight()-58));
+            jPanel.setPreferredSize(new Dimension(f.getWidth()-36,f.getHeight()-58));
             bufferedImage = new BufferedImage(jPanel.getWidth(), jPanel.getHeight(), BufferedImage.TYPE_INT_RGB);
             g = (Graphics2D) bufferedImage.getGraphics();
             g.setColor(newPicture.getColor());
             g.fillRect(0, 0, jPanel.getWidth(), jPanel.getHeight());
             //currentColor=newPicture.getColor();
+            f.pack();
             jPanel.setBufferedImage(bufferedImage);
             jPanel.updateUI();
         });
@@ -585,7 +556,6 @@ class ImageEdit {
 
             }
 
-
         });
 
 
@@ -605,15 +575,6 @@ class ImageEdit {
 
         redo_undo.add(undo);
         redo_undo.add(redo);
-
-        for (int i = 0; i < redo_undo.getComponentCount(); i++) {
-            Component comp = redo_undo.getComponent(i);
-            if (comp instanceof JButton) {
-                ((JButton) comp).setFocusable(false);
-            }
-
-            /// f.add(redo_undo, BorderLayout.WEST);
-        }
 
         options.add(redo_undo, BorderLayout.BEFORE_FIRST_LINE);
         f.setJMenuBar(options);
@@ -794,20 +755,7 @@ class MyPanel extends JPanel {
         this.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent componentEvent) {
-                /*if (bufferedImage == null) return;
-                //bufferedImage=imageEdit.bufferedImage;
-                AffineTransform tx = new AffineTransform();
-                tx.scale(1.0*getWidth() / bufferedImage.getWidth(),
-                        1.0*getHeight() / bufferedImage.getHeight());
-                //if (tx.getScaleX() <= 0 || tx.getScaleY() <= 0) return;
-                AffineTransformOp op = new AffineTransformOp(tx,
-                        AffineTransformOp.TYPE_BILINEAR);
-                bufferedImage = op.filter(bufferedImage, null);
-                //Graphics graphics = bufferedImage.getGraphics();
-                //setPreferredSize(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()));
-                //graphics.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth(),
-               //         bufferedImage.getHeight(), 0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), null);
-                imageEdit.bufferedImage=bufferedImage;*/
+
             }
         });
     }
