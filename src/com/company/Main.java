@@ -74,6 +74,8 @@ class ImageEdit {
         setToolButons();
         setListeners();
         setMenu();
+        System.out.println(bufferedImage.getWidth()+" "+bufferedImage.getHeight());
+        System.out.println(jPanel.getWidth()+" "+jPanel.getHeight());
 
         InputMap imap = jPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         imap.put(KeyStroke.getKeyStroke("ctrl S"), "test");
@@ -419,6 +421,19 @@ class ImageEdit {
                     jPanel.updateUI();
                 }
                 if (mode == Brushes.PLUS) {
+                    //System.out.println(bufferedImage.getWidth());
+                    /*AffineTransform tx = new AffineTransform();
+                    tx.scale(2, 2);
+
+                    AffineTransformOp op = new AffineTransformOp(tx,
+                            AffineTransformOp.TYPE_BILINEAR);
+                    bufferedImage = op.filter(bufferedImage, null);
+                    jPanel.setPreferredSize(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()));
+                    g.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth(),
+                            bufferedImage.getHeight(), 0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), null);
+                    jPanel.setBufferedImage(bufferedImage);
+                    jPanel.updateUI();
+                    //System.out.println(bufferedImage.getWidth());*/
                     jPanel.setPreferredSize(new Dimension((int)(jPanel.getWidth()*2),
                             (int)(jPanel.getHeight()*2)));
                     jPanel.setBufferedImage(bufferedImage);
@@ -439,21 +454,23 @@ class ImageEdit {
         });
     }
 
-    private static BufferedImage scale(BufferedImage bufferedImage, MyPanel jPanel, double scale) {
-        AffineTransform tx = new AffineTransform();
-        tx.scale(2, 2);
+    private static BufferedImage scale1(BufferedImage before, double scale) {
+        int w = before.getWidth();
+        int h = before.getHeight();
+        // Create a new image of the proper size
+        int w2 = (int) (w * scale);
+        int h2 = (int) (h * scale);
+        BufferedImage after = new BufferedImage(w2, h2, BufferedImage.TYPE_INT_ARGB);
+        AffineTransform scaleInstance = AffineTransform.getScaleInstance(scale, scale);
+        AffineTransformOp scaleOp
+                = new AffineTransformOp(scaleInstance, AffineTransformOp.TYPE_BILINEAR);
 
-        AffineTransformOp op = new AffineTransformOp(tx,
-                AffineTransformOp.TYPE_BILINEAR);
-        bufferedImage = op.filter(bufferedImage, null);
-        Graphics2D g = (Graphics2D)bufferedImage.getGraphics();
-        jPanel.setPreferredSize(new Dimension(bufferedImage.getWidth(), bufferedImage.getHeight()));
-        g.drawImage(bufferedImage, 0, 0, bufferedImage.getWidth(),
-                bufferedImage.getHeight(), 0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), null);
-        jPanel.setBufferedImage(bufferedImage);
-        jPanel.updateUI();
-        return bufferedImage;
-        //System.out.println(bufferedImage.getWidth());
+        Graphics2D g2 = (Graphics2D) after.getGraphics();
+        // Here, you may draw anything you want into the new image, but we're
+        // drawing a scaled version of the original image.
+        g2.drawImage(before, scaleOp, 0, 0);
+        g2.dispose();
+        return after;
     }
 
 
