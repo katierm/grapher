@@ -551,6 +551,7 @@ class ImageEdit {
                 bufferedImage = b;
                 g = (Graphics2D) bufferedImage.getGraphics();
                 g.drawImage(bufferedImage, 0, 0, null);
+                System.out.println("rs = " + redoStack.size()+" ud = "+undoStack.size());
                 jPanel.setBufferedImage(bufferedImage);
                 jPanel.updateUI();
 
@@ -563,11 +564,13 @@ class ImageEdit {
                 getImage().getScaledInstance(20, 20, Image.SCALE_DEFAULT)));
         undo.addActionListener(actionEvent -> {
             if (undoStack.empty()) return;
+            redoStack.push(clone(bufferedImage));
             BufferedImage b = undoStack.pop();
-            redoStack.push(clone(b));
+            //redoStack.push(clone(b));
             bufferedImage = b;
             g = (Graphics2D) bufferedImage.getGraphics();
             g.drawImage(bufferedImage, 0, 0, null);
+            System.out.println("rs = " + redoStack.size()+" ud = "+undoStack.size());
             jPanel.setBufferedImage(bufferedImage);
             jPanel.updateUI();
         });
