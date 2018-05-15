@@ -30,23 +30,19 @@ public class Main {
 class ImageEdit {
     private Brushes mode = PEN;
     //pos
-    int xPad, yPad;
+    private int xPad, yPad;
 
     //for oval and rec
-    int xf, yf;
-    //
+    private int xf, yf;
     JFrame f;
-    private JColorChooser colorChooser;
-    private JColorChooser newPicture;
     private MyPanel jPanel;
     private Color currentColor;
-    public BufferedImage bufferedImage, bf2;
-    private Graphics2D g, g2;
+    private BufferedImage bufferedImage;
+    private Graphics2D g;
     private int thickness;
     private int backgroundColor = -1;
     public Stack<BufferedImage> redoStack = new Stack<>();
     public Stack<BufferedImage> undoStack = new Stack<>();
-    ImageEdit ie;
     public ImageEdit() {
         f = new JFrame("Graph Editor");
         f.setSize(500, 500);
@@ -74,8 +70,6 @@ class ImageEdit {
         setToolButons();
         setListeners();
         setMenu();
-        System.out.println(bufferedImage.getWidth()+" "+bufferedImage.getHeight());
-        System.out.println(jPanel.getWidth()+" "+jPanel.getHeight());
 
         InputMap imap = jPanel.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
         imap.put(KeyStroke.getKeyStroke("ctrl S"), "test");
@@ -92,7 +86,7 @@ class ImageEdit {
 
     private void setColorButtons() {
         JToolBar colorBar = new JToolBar("colorBar", JToolBar.HORIZONTAL);
-        colorChooser = new JColorChooser(currentColor);
+        JColorChooser colorChooser = new JColorChooser(currentColor);
 
         JButton chooseColor = new JButton();
         chooseColor.addActionListener(actionEvent -> {
@@ -260,6 +254,13 @@ class ImageEdit {
         });
         jToolBar.add(minus);
 
+        JButton kadr = new JButton("k");
+        kadr.addActionListener(actionEvent -> {
+            mode = Brushes.CADR;
+        });
+        jToolBar.add(kadr);
+
+
         f.add(jToolBar, BorderLayout.WEST);
         jToolBar.setFloatable(false);
     }
@@ -271,8 +272,6 @@ class ImageEdit {
             public void mouseMoved(MouseEvent e) {
                 xPad = e.getX();
                 yPad = e.getY();
-                //xf = xPad;
-                //yf = yPad;
             }
 
             @Override
@@ -317,8 +316,8 @@ class ImageEdit {
                         double xt = (double) xf / jPanel.getWidth();
                         double yt = (double) yf / jPanel.getHeight();
                         g.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 1}, 0));
-                        bf2 = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
-                        g2 = (Graphics2D) bf2.getGraphics();
+                        BufferedImage bf2 = new BufferedImage(bufferedImage.getWidth(), bufferedImage.getHeight(), bufferedImage.getType());
+                        Graphics2D g2 = (Graphics2D) bf2.getGraphics();
                         g2.drawImage(bufferedImage, 0, 0, null);
                         g2.setColor(currentColor);
                         g2.setStroke(new BasicStroke(thickness, BasicStroke.CAP_ROUND, BasicStroke.JOIN_BEVEL, 0, new float[]{3, 1}, 0));
@@ -345,6 +344,13 @@ class ImageEdit {
                                 (int) abs(xp1 * bufferedImage.getWidth()), (int) abs(yp1 * bufferedImage.getHeight()));
                         jPanel.setBufferedImage(bf2);
                         break;
+                    case CADR:
+                            bufferedImage=getCadrImage(e.getX(),e.getY());
+                            jPanel.setPreferredSize(new Dimension(bufferedImage.getWidth(),bufferedImage.getHeight()));
+                            jPanel.setSize(new Dimension(bufferedImage.getWidth(),bufferedImage.getHeight()));
+                            jPanel.setBufferedImage(bufferedImage);
+                            jPanel.updateUI();
+                            break;
                 }
 
                 xPad = e.getX();
@@ -357,7 +363,6 @@ class ImageEdit {
         jPanel.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                jPanel.setImageEdit(ie);
                 if (mode == Brushes.OVAL || mode == Brushes.RECTANGLE) {
                     double xp1 = (double) (-xf + e.getX()) / jPanel.getWidth();
                     double yp1 = (double) (-yf + e.getY()) / jPanel.getHeight();
@@ -489,7 +494,7 @@ class ImageEdit {
         JMenuItem background = new JMenuItem("New");
         menu.add(background);
         options.add(menu);
-        newPicture = new JColorChooser();
+        JColorChooser newPicture = new JColorChooser();
         background.addActionListener(actionEvent -> {
             JDialog colorDialog = new JDialog(f, "Choose background");
             colorDialog.add(newPicture);
@@ -551,7 +556,6 @@ class ImageEdit {
                 bufferedImage = b;
                 g = (Graphics2D) bufferedImage.getGraphics();
                 g.drawImage(bufferedImage, 0, 0, null);
-                System.out.println("rs = " + redoStack.size()+" ud = "+undoStack.size());
                 jPanel.setBufferedImage(bufferedImage);
                 jPanel.updateUI();
 
@@ -570,7 +574,6 @@ class ImageEdit {
             bufferedImage = b;
             g = (Graphics2D) bufferedImage.getGraphics();
             g.drawImage(bufferedImage, 0, 0, null);
-            System.out.println("rs = " + redoStack.size()+" ud = "+undoStack.size());
             jPanel.setBufferedImage(bufferedImage);
             jPanel.updateUI();
         });
@@ -582,6 +585,27 @@ class ImageEdit {
         options.add(redo_undo, BorderLayout.BEFORE_FIRST_LINE);
         f.setJMenuBar(options);
 
+    }
+    BufferedImage getCadrImage(int x,int y){
+        int min=10;
+        if(x>bufferedImage.getWidth()||x<0||y>bufferedImage.getHeight()||y<0) return bufferedImage;
+        if(xPad<min&&yPad<min) return clone(bufferedImage).getSubimage(x,y,bufferedImage.getWidth()-x,
+                bufferedImage.getHeight()-y);
+        if(xPad<min&&yPad>bufferedImage.getHeight()-min) return clone(bufferedImage).getSubimage(0,0,
+                bufferedImage.getWidth()-x,y);
+        if(xPad<min) return clone(bufferedImage).getSubimage(x,0,bufferedImage.getWidth()-x,
+                bufferedImage.getHeight());
+        if(xPad>bufferedImage.getWidth()-min&&yPad<min) return clone(bufferedImage).getSubimage(
+                0,y,x, y);
+        if(yPad<min)
+            return clone(bufferedImage).getSubimage(0, y, bufferedImage.getWidth(), bufferedImage.getHeight() - y);
+
+        if(xPad>bufferedImage.getWidth()-min) return clone(bufferedImage).getSubimage(
+                0,0,x, bufferedImage.getHeight());
+        if(xPad>bufferedImage.getWidth()-min&&yPad>bufferedImage.getHeight()-min) return clone(bufferedImage).getSubimage(
+                0,0,x, y);
+        if(yPad>bufferedImage.getHeight()-min) return bufferedImage.getSubimage(0,0,bufferedImage.getWidth(),y);
+        return  bufferedImage;
     }
 
     void openLoadDialog() {
@@ -650,15 +674,8 @@ class ImageEdit {
     }
 
     private void fillPoints(BufferedImage image) {
-        //сделать заливку
-
         int width = image.getWidth();
         int height = image.getHeight();
-
-        //pixels = new int[width * height];
-
-        //PixelGrabber pgb = new PixelGrabber(image, 0, 0, width, height, pixels, 0, width);
-        //pgb.grabPixels();
 
         int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
         int[][] pixels2D = new int[width][height];
@@ -669,9 +686,12 @@ class ImageEdit {
             }
         }
         //System.out.println(Arrays.deepToString(pixels2D));
-        int curColor = image.getRGB(xPad, yPad);
+        double kx = 1.0*jPanel.getWidth()/bufferedImage.getWidth();
+        double ky = 1.0*jPanel.getHeight()/bufferedImage.getHeight();
+        int curColor = image.getRGB((int)(xPad/kx), (int)(yPad/ky));
+        System.out.println(xPad+" "+yPad+" "+jPanel.getWidth());
         int colorToFill = currentColor.getRGB();
-        fillPoints(pixels2D, xPad, yPad, curColor, colorToFill);
+        fillPoints(pixels2D, (int)(xPad/kx), (int)(yPad/ky), curColor, colorToFill);
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -792,5 +812,6 @@ enum Brushes {
     FILL,
     PLUS,
     MINUS,
-    COLOR
+    COLOR,
+    CADR
 }
